@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<launch>
+    <param name="use_sim_time" value="true"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find basic_robot_simulator)/launch/rviz.rviz"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 base_link laser 100" />
+
+    <node name="basic_robot_simulator" pkg="basic_robot_simulator" type="simulator.py" output="screen">
+        <param name="map_file" value="$(find basic_robot_simulator)/launch/map.png"/>
+        <param name="map_resolution" value="0.05"/> <!-- meters per cell -->
+        <param name="time_resolution" value="0.1"/> <!-- time diff between simulator ticks in seconds -->
+        <param name="laser_min_angle" value="-135"/> <!-- laser start angle in degrees -->
+        <param name="laser_max_angle" value="135"/> <!-- laser end angle in degrees -->
+        <param name="laser_resolution" value="1"/> <!-- angle between two laser rays in degrees -->
+        <param name="laser_noise_mu" value="0.1"/> <!-- additive normal distribution noise -->
+        <param name="laser_noise_sigma" value="0.02"/> <!-- additive normal distribution noise -->
+        <param name="laser_max_dist" value="15.0"/> <!-- rays exceeding this value will be converted no NaN -->
+        <param name="robot_pos_x" value="2.0"/>
+        <param name="robot_pos_y" value="2.0"/>
+        <param name="robot_pos_theta" value="0"/>
+    </node>
+
+</launch>
+
