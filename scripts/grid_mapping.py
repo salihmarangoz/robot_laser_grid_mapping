@@ -37,9 +37,57 @@ class GridMapping:
     def is_inside (self, i, j):
         return i<self.gridmap.shape[0] and j<self.gridmap.shape[1] and i>=0 and j>=0
 
+    def raycast_update(self, x0, y0, theta, d):
+        if np.isnan(d):
+            #d = self.laser_max_dist
+            return
+
+        x1 = x0 + d*np.cos(theta)
+        y1 = y0 + d*np.sin(theta)
+        i0, j0 = self.to_ij(x0, y0)
+        i1, j1 = self.to_ij(x1, y1)
+        d_cells = d / self.map_resolution
+        ip, jp, is_hit = self.bresenham(i0, j0, i1, j1, d_cells)
+        if not np.isnan(d) and d != self.laser_max_dist:
+            # Hit!
+            self.gridmap[int(ip),int(jp)] = 100
+        return
+    
+    #bresenham method is used to plot the lines
+    def bresenham (self, i0, j0, i1, j1, d, debug=False):   # i0, j0 (starting point)
+        dx = np.absolute(j1-j0)
+        dy = -1 * np.absolute(i1-i0)
+        sx = -1
+        if j0<j1:
+            sx = 1
+        sy = -1
+        if i0<i1:
+            sy = 1
+        jp, ip = j0, i0
+        err = dx+dy                     # error value e_xy
+        while True:                     # loop
+            #print(ip,jp, i1, j1)
+            if (jp == j1 and ip == i1) or (np.sqrt((jp-j0)**2+(ip-i0)**2) >= d) or not self.is_inside(ip, jp):
+                return ip, jp, False
+            elif self.gridmap[int(ip),int(jp)]==100:
+                return ip, jp, True
+
+            if self.is_inside(ip, jp):# miss:
+                self.gridmap[int(ip),int(jp)]=0
+
+            e2 = 2*err
+            if e2 >= dy:                # e_xy+e_x > 0 
+                err += dy
+                jp += sx
+            if e2 <= dx:                # e_xy+e_y < 0
+                err += dx
+                ip += sy
+
     def update(self, x, y, theta, scan):
-        i,j = self.to_ij(x,y)
-        self.gridmap[int(i), int(j)] = 1 # test
+        #i,j = self.to_ij(x,y)
+        #self.gridmap[int(i), int(j)] = 1 # test
+        for i, z in enumerate(scan):
+            self.raycast_update(x, y, (theta + self.laser_min_angle + i*self.laser_resolution), z)
         return self.gridmap
 
 
@@ -48,6 +96,9 @@ class GridMappingROS:
     def __init__(self):
         rospy.init_node('RosGridMapping', anonymous=True)
         self.is_gridmapping_initialized = False
+        self.map_last_publish = rospy.Time()
+        self.prev_robot_x = -99999999
+        self.prev_robot_y = -99999999
 
         self.robot_frame        = rospy.get_param('~robot_frame', 'base_link')
         self.map_frame          = rospy.get_param('~map_frame', 'map')
@@ -56,6 +107,8 @@ class GridMappingROS:
         self.map_size_x         = rospy.get_param('~map_size_x', 32.0)
         self.map_size_y         = rospy.get_param('~map_size_y', 12.0)
         self.map_resolution     = rospy.get_param('~map_resolution', 0.05)
+        self.map_publish_freq   = rospy.get_param('~map_publish_freq', 1.0)
+        self.update_movement    = rospy.get_param('~update_movement', 0.1)
 
         # Creata a OccupancyGrid message template
         self.map_msg = OccupancyGrid()
@@ -90,15 +143,23 @@ class GridMappingROS:
             (x, y, _),(qx, qy, qz, qw) = self.tf_sub.lookupTransform(self.map_frame, self.robot_frame, data.header.stamp)
             theta = self.quarternion_to_yaw(qx, qy, qz, qw)
 
+            # check the movement if update is needed
+            if ( (x-self.prev_robot_x)**2 + (y-self.prev_robot_y)**2 < self.update_movement**2 ):
+                return
+            self.prev_robot_x = x
+            self.prev_robot_y = y
+
             # update map
             self.map_msg.data = self.gridmapping.update(x, y, theta, data.ranges).flatten()
 
             # publish map
             # http://docs.ros.org/en/melodic/api/nav_msgs/html/msg/OccupancyGrid.html
             # The map data, in row-major order, starting with (0,0).  Occupancy probabilities are in the range [0,100].  Unknown is -1.
-            self.map_msg.header.stamp = data.header.stamp
-            self.map_pub.publish(self.map_msg)
-
+            if (self.map_last_publish.to_sec() + 1.0/self.map_publish_freq < rospy.Time.now().to_sec() ):
+                self.map_last_publish = rospy.Time.now()
+                self.map_msg.header.stamp = data.header.stamp
+                self.map_pub.publish(self.map_msg)
+                rospy.loginfo_once("Published map!")
 
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
             rospy.logerr(e)
