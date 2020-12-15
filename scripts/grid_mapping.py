@@ -4,6 +4,7 @@ import numpy as np
 import rospy
 import time
 from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import OccupancyGrid
 import tf
 
 
@@ -19,28 +20,27 @@ class GridMapping:
         self.laser_resolution = laser_resolution  #radian
         self.laser_max_dist = laser_max_dist      #meter
 
-# TODOOOOOO
+        map_rows = int(map_size_y / map_resolution)
+        map_cols = int(map_size_x / map_resolution)
+        self.gridmap = -1 * np.ones((map_rows, map_cols), dtype=np.int8)
+
     def to_xy (self, i, j):
-        x = j * self.map_resolution
-        y = (self.gridmap.shape[0] - i) * self.map_resolution
+        x = j * self.map_resolution + self.map_center_x
+        y = i * self.map_resolution + self.map_center_y
         return x, y
 
     def to_ij (self, x, y):
-        i = self.gridmap.shape[0] - (y / self.map_resolution)
-        j = x / self.map_resolution
+        i = (y-self.map_center_y) / self.map_resolution
+        j = (x-self.map_center_x) / self.map_resolution
         return i, j
 
     def is_inside (self, i, j):
         return i<self.gridmap.shape[0] and j<self.gridmap.shape[1] and i>=0 and j>=0
 
-    def get_borders(self):
-        return [0.0, self.gridmap.shape[1] * self.map_resolution, 0.0, self.gridmap.shape[0] * self.map_resolution]
-# TODOOOOOO
-
-
     def update(self, x, y, theta, scan):
-        return
-        print("update!")
+        i,j = self.to_ij(x,y)
+        self.gridmap[int(i), int(j)] = 1 # test
+        return self.gridmap
 
 
 
@@ -49,15 +49,25 @@ class GridMappingROS:
         rospy.init_node('RosGridMapping', anonymous=True)
         self.is_gridmapping_initialized = False
 
-        self.robot_frame = rospy.get_param('~robot_frame', 'base_link')
-        self.map_frame = rospy.get_param('~map_frame', 'odom')
-        self.map_center_x = rospy.get_param('~map_center_x', 0.0)
-        self.map_center_y = rospy.get_param('~map_center_y', 0.0)
-        self.map_size_x = rospy.get_param('~map_size_x', 10.0)
-        self.map_size_y = rospy.get_param('~map_size_y', 10.0)
-        self.map_resolution = rospy.get_param('~map_resolution', 0.05)
+        self.robot_frame        = rospy.get_param('~robot_frame', 'base_link')
+        self.map_frame          = rospy.get_param('~map_frame', 'map')
+        self.map_center_x       = rospy.get_param('~map_center_x', -1.0)
+        self.map_center_y       = rospy.get_param('~map_center_y', -1.0)
+        self.map_size_x         = rospy.get_param('~map_size_x', 32.0)
+        self.map_size_y         = rospy.get_param('~map_size_y', 12.0)
+        self.map_resolution     = rospy.get_param('~map_resolution', 0.05)
+
+        # Creata a OccupancyGrid message template
+        self.map_msg = OccupancyGrid()
+        self.map_msg.header.frame_id = self.map_frame
+        self.map_msg.info.resolution = self.map_resolution
+        self.map_msg.info.width = int(self.map_size_x / self.map_resolution)
+        self.map_msg.info.height = int(self.map_size_y / self.map_resolution)
+        self.map_msg.info.origin.position.x = self.map_center_x
+        self.map_msg.info.origin.position.y = self.map_center_y
 
         self.laser_sub = rospy.Subscriber("scan", LaserScan, self.laserscan_callback, queue_size=100)
+        self.map_pub = rospy.Publisher('map', OccupancyGrid, queue_size=2)
         self.tf_sub = tf.TransformListener()
 
     def init_gridmapping(self, laser_min_angle, laser_max_angle, laser_resolution, laser_max_dist):
@@ -76,12 +86,19 @@ class GridMappingROS:
 
         self.tf_sub.waitForTransform(self.map_frame, self.robot_frame, data.header.stamp, rospy.Duration(10.0))
         try:
-            # get the position associated with the current laserscan
+            # get the robot position associated with the current laserscan
             (x, y, _),(qx, qy, qz, qw) = self.tf_sub.lookupTransform(self.map_frame, self.robot_frame, data.header.stamp)
             theta = self.quarternion_to_yaw(qx, qy, qz, qw)
 
             # update map
-            self.gridmapping.update(x, y, theta, data.ranges)
+            self.map_msg.data = self.gridmapping.update(x, y, theta, data.ranges).flatten()
+
+            # publish map
+            # http://docs.ros.org/en/melodic/api/nav_msgs/html/msg/OccupancyGrid.html
+            # The map data, in row-major order, starting with (0,0).  Occupancy probabilities are in the range [0,100].  Unknown is -1.
+            self.map_msg.header.stamp = data.header.stamp
+            self.map_pub.publish(self.map_msg)
+
 
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
             rospy.logerr(e)
