@@ -8,7 +8,7 @@ Youtube Link: https://www.youtube.com/watch?v=d3tr82qCzv0
 
 The original map for the recorded bag:
 
-![](/home/salih/catkin_ws/src/basic_grid_mapping/map.png)
+![](map.png)
 
 ## Features
 
