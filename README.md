@@ -1,6 +1,6 @@
 # Basic Grid Mapping (Log Odds)
 
-Simple mapping for known pose algorithm (ROS package) using log odds. 
+Mapping for known poses algorithm (ROS package) using log odds. 
 
 Youtube Link: https://www.youtube.com/watch?v=d3tr82qCzv0
 
