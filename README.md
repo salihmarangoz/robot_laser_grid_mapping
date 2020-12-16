@@ -1,4 +1,4 @@
-# Basic Grid Mapping (Log Odds)
+# Basic Grid Mapping (ROS)
 
 Mapping for known poses algorithm (ROS package) using log odds. 
 
@@ -6,7 +6,7 @@ Youtube Link: https://www.youtube.com/watch?v=d3tr82qCzv0
 
 [![](https://img.youtube.com/vi/d3tr82qCzv0/0.jpg)](https://www.youtube.com/watch?v=d3tr82qCzv0)
 
-The original map for the recorded bag:
+The original map for the recorded bag: (Bag is generated using https://github.com/salihmarangoz/basic_robot_simulator)
 
 ![](map.png)
 
