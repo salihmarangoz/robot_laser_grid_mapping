@@ -2,9 +2,9 @@
 
 Mapping for known poses algorithm (ROS package) using log odds. 
 
-Youtube Link: https://www.youtube.com/watch?v=d3tr82qCzv0
+Youtube Link: https://youtu.be/ykOTfrS5pO4
 
-[![](https://img.youtube.com/vi/d3tr82qCzv0/0.jpg)](https://www.youtube.com/watch?v=d3tr82qCzv0)
+[![](https://img.youtube.com/vi/ykOTfrS5pO4/0.jpg)](https://youtu.be/ykOTfrS5pO4)
 
 The original map for the recorded bag: (Bag is generated using https://github.com/salihmarangoz/basic_robot_simulator)
 

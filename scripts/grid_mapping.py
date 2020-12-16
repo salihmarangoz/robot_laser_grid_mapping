@@ -154,9 +154,9 @@ class GridMappingROS:
         # http://docs.ros.org/en/melodic/api/nav_msgs/html/msg/OccupancyGrid.html
         # The map data, in row-major order, starting with (0,0).  Occupancy probabilities are in the range [0,100].  Unknown is -1.
         gridmap_p = l2p(gridmap)
-        unknown_mask = (gridmap_p == self.sensor_model_p_prior)
+        #unknown_mask = (gridmap_p == self.sensor_model_p_prior)  # for setting unknown cells to -1
         gridmap_int8 = (gridmap_p*100).astype(dtype=np.int8)
-        gridmap_int8[unknown_mask] = -1
+        #gridmap_int8[unknown_mask] = -1  # for setting unknown cells to -1
 
         # Publish map
         self.map_msg.data = gridmap_int8
