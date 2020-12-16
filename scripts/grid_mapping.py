@@ -17,7 +17,7 @@ def p2l(p):
 
 
 class GridMapping:
-    def __init__(self, map_center_x, map_center_y, map_size_x, map_size_y, map_resolution, laser_min_angle, laser_max_angle, laser_resolution, laser_max_dist, sensor_model_p_occ, sensor_model_p_free, sensor_model_p_prior, sensor_model_r):
+    def __init__(self, map_center_x, map_center_y, map_size_x, map_size_y, map_resolution, laser_min_angle, laser_max_angle, laser_resolution, laser_max_dist, sensor_model_p_occ, sensor_model_p_free, sensor_model_p_prior):
         self.map_center_x = map_center_x          #meter
         self.map_center_y = map_center_y          #meter
         self.map_size_x = map_size_x              #meter
@@ -30,7 +30,6 @@ class GridMapping:
         self.sensor_model_l_occ = p2l(sensor_model_p_occ)
         self.sensor_model_l_free = p2l(sensor_model_p_free)
         self.sensor_model_l_prior = p2l(sensor_model_p_prior)
-        self.sensor_model_r = sensor_model_r
 
         map_rows = int(map_size_y / map_resolution)
         map_cols = int(map_size_x / map_resolution)
@@ -117,7 +116,6 @@ class GridMappingROS:
         self.sensor_model_p_occ   = rospy.get_param('~sensor_model_p_occ', 0.75)
         self.sensor_model_p_free  = rospy.get_param('~sensor_model_p_free', 0.45)
         self.sensor_model_p_prior = rospy.get_param('~sensor_model_p_prior', 0.5)
-        self.sensor_model_r       = rospy.get_param('~sensor_model_r', 0.05)
         self.robot_frame          = rospy.get_param('~robot_frame', 'base_link')
         self.map_frame            = rospy.get_param('~map_frame', 'map')
         self.map_center_x         = rospy.get_param('~map_center_x', -1.0)
@@ -142,7 +140,7 @@ class GridMappingROS:
         self.tf_sub = tf.TransformListener()
 
     def init_gridmapping(self, laser_min_angle, laser_max_angle, laser_resolution, laser_max_dist):
-        self.gridmapping = GridMapping(self.map_center_x, self.map_center_y, self.map_size_x, self.map_size_y, self.map_resolution, laser_min_angle, laser_max_angle, laser_resolution, laser_max_dist, self.sensor_model_p_occ, self.sensor_model_p_free, self.sensor_model_p_prior, self.sensor_model_r)
+        self.gridmapping = GridMapping(self.map_center_x, self.map_center_y, self.map_size_x, self.map_size_y, self.map_resolution, laser_min_angle, laser_max_angle, laser_resolution, laser_max_dist, self.sensor_model_p_occ, self.sensor_model_p_free, self.sensor_model_p_prior)
         self.is_gridmapping_initialized = True
 
     # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_angles_conversion

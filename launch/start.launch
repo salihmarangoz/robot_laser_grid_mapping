@@ -5,11 +5,21 @@
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find basic_grid_mapping)/launch/rviz.rviz"/>
 
-    <node name="rosbag" pkg="rosbag" type="play" args="$(find basic_grid_mapping)/launch/run1.bag --clock -r 5"/>
+    <node name="rosbag" pkg="rosbag" type="play" args="$(find basic_grid_mapping)/launch/run1.bag --clock -r 5"/> <!-- playing ros bag with x5 speed rate -->
 
     <node name="basic_grid_mapping" pkg="basic_grid_mapping" type="grid_mapping.py" output="screen">
-        <param name="test_param" value="0.05"/> <!-- meters per cell -->
+        <param name="sensor_model_p_occ"        value="0.75"/>
+        <param name="sensor_model_p_free"       value="0.45"/> 
+        <param name="sensor_model_p_prior"      value="0.5"/> 
+        <param name="robot_frame"               value="base_link"/> 
+        <param name="map_frame"                 value="map"/> 
+        <param name="map_center_x"              value="-1.0"/> 
+        <param name="map_center_y"              value="-1.0"/> 
+        <param name="map_size_x"                value="32.0"/> 
+        <param name="map_size_y"                value="12.0"/> 
+        <param name="map_resolution"            value="0.1"/> 
+        <param name="map_publish_freq"          value="1.0"/> 
+        <param name="update_movement"           value="0.1"/> <!-- update when moved this much -->
     </node>
 
 </launch>
-
