@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 
 <launch>
+    <param name="use_sim_time" value="true"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find basic_grid_mapping)/launch/rviz.rviz"/>
+
+    <node name="rosbag" pkg="rosbag" type="play" args="$(find basic_grid_mapping)/launch/run1.bag --clock -r 5"/>
 
     <node name="basic_grid_mapping" pkg="basic_grid_mapping" type="grid_mapping.py" output="screen">
         <param name="test_param" value="0.05"/> <!-- meters per cell -->
