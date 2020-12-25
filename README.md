@@ -1,4 +1,4 @@
-# Basic Grid Mapping (ROS)
+# Robot Laser Grid Mapping (ROS)
 
 Mapping for known poses algorithm (ROS package) using log odds. 
 
