@@ -6,7 +6,7 @@ Youtube Link: https://youtu.be/ykOTfrS5pO4
 
 [![](https://img.youtube.com/vi/ykOTfrS5pO4/0.jpg)](https://youtu.be/ykOTfrS5pO4)
 
-The original map for the recorded bag: (Bag is generated using https://github.com/salihmarangoz/basic_robot_simulator)
+The original map for the recorded bag: (Bag is generated using https://github.com/salihmarangoz/robot_laser_simulator)
 
 ![](map.png)
 
@@ -21,6 +21,6 @@ The original map for the recorded bag: (Bag is generated using https://github.co
 ## Running
 
 ```bash
-$ roslaunch basic_grid_mapping start.launch
+$ roslaunch robot_laser_grid_mapping start.launch
 ```
 
