@@ -59,7 +59,7 @@ class GridMapping:
         i1, j1 = self.to_ij(x1, y1)
         d_cells = d / self.map_resolution
         ip, jp, is_hit = self.bresenham(i0, j0, i1, j1, d_cells)
-        if not np.isnan(d) and d != self.laser_max_dist:
+        if not np.isnan(d) and d != self.laser_max_dist and self.is_inside(int(ip),int(jp)):
             # Hit!
             self.gridmap[int(ip),int(jp)] += self.sensor_model_l_occ - self.sensor_model_l_prior
         return
