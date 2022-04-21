@@ -49,9 +49,14 @@ class GridMapping:
         return i<self.gridmap.shape[0] and j<self.gridmap.shape[1] and i>=0 and j>=0
 
     def raycast_update(self, x0, y0, theta, d):
-        if np.isnan(d):
+        # see: https://www.ros.org/reps/rep-0117.html
+        # Detections that are too close to the sensor to quantify shall be represented by -Inf. 
+        # Erroneous detections shall be represented by quiet (non-signaling) NaNs. 
+        # Finally, out of range detections will be represented by +Inf.
+        if np.isinf(d) and np.sign(d) == +1:
             d = self.laser_max_dist
-            #return
+        elif np.isinf(d) or np.isnan(d):
+            return
 
         x1 = x0 + d*np.cos(theta)
         y1 = y0 + d*np.sin(theta)
