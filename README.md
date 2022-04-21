@@ -21,6 +21,9 @@ The original map for the recorded bag: (Bag is generated using https://github.co
 ## Running
 
 ```bash
+# For testing with a bag file:
 $ roslaunch robot_laser_grid_mapping start.launch
+# For running together with the simulator (https://github.com/salihmarangoz/robot_laser_simulator):
+$ roslaunch robot_laser_grid_mapping start_with_sim.launch
 ```
 

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<launch>
+    <param name="use_sim_time" value="true"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robot_laser_grid_mapping)/launch/rviz.rviz"/>
+
+    <node name="robot_laser_grid_mapping" pkg="robot_laser_grid_mapping" type="grid_mapping.py" output="screen">
+        <param name="sensor_model_p_occ"        value="0.75"/>
+        <param name="sensor_model_p_free"       value="0.45"/> 
+        <param name="sensor_model_p_prior"      value="0.5"/> 
+        <param name="robot_frame"               value="base_link"/> 
+        <param name="map_frame"                 value="map"/> 
+        <param name="map_center_x"              value="-1.0"/> 
+        <param name="map_center_y"              value="-1.0"/> 
+        <param name="map_size_x"                value="32.0"/> 
+        <param name="map_size_y"                value="12.0"/> 
+        <param name="map_resolution"            value="0.1"/> 
+        <param name="map_publish_freq"          value="1.0"/> 
+        <param name="update_movement"           value="0.1"/> <!-- update when moved this much -->
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 base_link laser 100" />
+
+    <node name="robot_laser_simulator" pkg="robot_laser_simulator" type="simulator.py" output="screen">
+        <param name="map_file" value="$(find robot_laser_simulator)/launch/map.png"/>
+        <param name="map_resolution" value="0.05"/> <!-- meters per cell -->
+        <param name="time_resolution" value="0.1"/> <!-- time diff between simulator ticks in seconds -->
+        <param name="laser_min_angle" value="-135"/> <!-- laser start angle in degrees -->
+        <param name="laser_max_angle" value="135"/> <!-- laser end angle in degrees -->
+        <param name="laser_resolution" value="1"/> <!-- angle between two laser rays in degrees -->
+        <param name="laser_noise_mu" value="0.1"/> <!-- additive normal distribution noise -->
+        <param name="laser_noise_sigma" value="0.02"/> <!-- additive normal distribution noise -->
+        <param name="laser_max_dist" value="15.0"/> <!-- rays exceeding this value will be converted no NaN -->
+        <param name="robot_pos_x" value="2.0"/> <!-- start point -->
+        <param name="robot_pos_y" value="2.0"/> <!-- start point -->
+        <param name="robot_pos_theta" value="0"/> <!-- start point -->
+        <param name="odom_frame" value="map"/> <!-- leave empty for disabling odom publishing -->
+        <param name="robot_frame" value="base_link"/> <!-- also modify static_transform_publisher -->
+        <param name="laser_frame" value="laser"/> <!-- also modify static_transform_publisher -->
+    </node>
+
+
+</launch>
